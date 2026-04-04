@@ -1,0 +1,1389 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Конвертер валют</title>
+    <style>
+      :root {
+        /* dark (default) */
+        color-scheme: dark;
+        --bg: #0b1020;
+        --card: rgba(255, 255, 255, 0.1);
+        --card2: rgba(255, 255, 255, 0.075);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.78);
+        --faint: rgba(255, 255, 255, 0.66);
+        --border: rgba(255, 255, 255, 0.16);
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+        --accent: #7c5cff;
+        --accent2: #37d0ff;
+        --danger: #ff4d6d;
+        --ok: #2ee59d;
+        --ring: rgba(124, 92, 255, 0.55);
+        --field: rgba(255, 255, 255, 0.09);
+        --menuBg: rgba(12, 16, 32, 0.98);
+        --menuHover: rgba(255, 255, 255, 0.08);
+        --menuSelected: rgba(124, 92, 255, 0.22);
+        --menuText: rgba(255, 255, 255, 0.92);
+        --grad1: rgba(124, 92, 255, 0.35);
+        --grad2: rgba(55, 208, 255, 0.25);
+        --grad3: rgba(46, 229, 157, 0.18);
+        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial,
+          "Apple Color Emoji", "Segoe UI Emoji";
+        --radius: 18px;
+      }
+
+      :root[data-theme="light"] {
+        color-scheme: light;
+        --bg: #f6f7fb;
+        --card: rgba(0, 0, 0, 0.04);
+        --card2: rgba(0, 0, 0, 0.03);
+        --text: rgba(0, 0, 0, 0.9);
+        --muted: rgba(0, 0, 0, 0.68);
+        --faint: rgba(0, 0, 0, 0.55);
+        --border: rgba(0, 0, 0, 0.1);
+        --shadow: 0 24px 80px rgba(10, 20, 40, 0.18);
+        --ring: rgba(124, 92, 255, 0.35);
+        --field: rgba(255, 255, 255, 0.85);
+        --menuBg: rgba(255, 255, 255, 0.98);
+        --menuHover: rgba(0, 0, 0, 0.06);
+        --menuSelected: rgba(124, 92, 255, 0.14);
+        --menuText: rgba(0, 0, 0, 0.9);
+        --grad1: rgba(124, 92, 255, 0.22);
+        --grad2: rgba(55, 208, 255, 0.18);
+        --grad3: rgba(46, 229, 157, 0.14);
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root[data-theme="system"] {
+          color-scheme: light;
+          --bg: #f6f7fb;
+          --card: rgba(0, 0, 0, 0.04);
+          --card2: rgba(0, 0, 0, 0.03);
+          --text: rgba(0, 0, 0, 0.9);
+          --muted: rgba(0, 0, 0, 0.68);
+          --faint: rgba(0, 0, 0, 0.55);
+          --border: rgba(0, 0, 0, 0.1);
+          --shadow: 0 24px 80px rgba(10, 20, 40, 0.18);
+          --ring: rgba(124, 92, 255, 0.35);
+          --field: rgba(255, 255, 255, 0.85);
+          --menuBg: rgba(255, 255, 255, 0.98);
+          --menuHover: rgba(0, 0, 0, 0.06);
+          --menuSelected: rgba(124, 92, 255, 0.14);
+          --menuText: rgba(0, 0, 0, 0.9);
+          --grad1: rgba(124, 92, 255, 0.22);
+          --grad2: rgba(55, 208, 255, 0.18);
+          --grad3: rgba(46, 229, 157, 0.14);
+        }
+      }
+
+      :root[data-theme="system"] {
+        color-scheme: light dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        min-height: 100%;
+        background: var(--bg);
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        color: var(--text);
+        min-height: 100vh;
+        min-height: 100dvh;
+        background: radial-gradient(1100px 700px at 20% 10%, var(--grad1), transparent 60%),
+          radial-gradient(900px 600px at 85% 30%, var(--grad2), transparent 55%),
+          radial-gradient(700px 600px at 55% 90%, var(--grad3), transparent 55%), var(--bg);
+        background-repeat: no-repeat;
+      }
+
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 28px 18px 44px;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 18px;
+        margin-bottom: 16px;
+      }
+
+      .headerActions {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .title {
+        display: grid;
+        gap: 6px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 26px;
+        letter-spacing: 0.2px;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        line-height: 1.4;
+        font-size: 14px;
+        max-width: 56ch;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--faint);
+        box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06);
+      }
+
+      .dot.ok {
+        background: var(--ok);
+        box-shadow: 0 0 0 4px rgba(46, 229, 157, 0.18);
+      }
+
+      .dot.bad {
+        background: var(--danger);
+        box-shadow: 0 0 0 4px rgba(255, 77, 109, 0.18);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 14px;
+        align-items: start;
+      }
+
+      @media (max-width: 880px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        border-radius: var(--radius);
+        background: linear-gradient(180deg, var(--card), var(--card2));
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .card .inner {
+        padding: 18px;
+      }
+
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 15px;
+        font-weight: 650;
+        letter-spacing: 0.2px;
+        color: var(--text);
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      @media (max-width: 560px) {
+        .two {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 12px 12px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: var(--field);
+        color: var(--text);
+        outline: none;
+      }
+
+      select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        padding-right: 42px;
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 18px 18px;
+      }
+
+      :root[data-theme="dark"] select,
+      :root[data-theme="system"] select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 7.5l4.5 5 4.5-5' fill='none' stroke='%23ffffff' stroke-opacity='0.85' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      }
+
+      :root[data-theme="light"] select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M5.5 7.5l4.5 5 4.5-5' fill='none' stroke='%23000000' stroke-opacity='0.65' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      }
+
+      select option {
+        color: initial;
+      }
+
+      :root[data-theme="dark"] select option {
+        color: rgba(255, 255, 255, 0.92);
+        background: #0b1020;
+      }
+
+      :root[data-theme="light"] select option {
+        color: rgba(0, 0, 0, 0.9);
+        background: #ffffff;
+      }
+
+      .cselect {
+        position: relative;
+      }
+
+      .cselectNative {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .cselectBtn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 12px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: var(--field);
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .cselectBtn .cselectValue {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: left;
+        flex: 1;
+      }
+
+      .cselectBtn .cselectChevron {
+        width: 18px;
+        height: 18px;
+        opacity: 0.85;
+        flex: none;
+        transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+        transform: rotate(0deg);
+      }
+
+      .cselectBtn[aria-expanded="true"] .cselectChevron {
+        transform: rotate(180deg);
+      }
+
+      .cselectMenu {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(100% + 8px);
+        z-index: 80;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: var(--menuBg);
+        box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
+        overflow: hidden;
+        max-height: min(320px, 45vh);
+        max-height: min(320px, 45dvh);
+        overflow-y: auto;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform-origin: 16px 0px;
+        transform: translateY(-10px) scale(0.98);
+        transition: opacity 0.2s ease, transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0.2s linear;
+        will-change: opacity, transform;
+      }
+
+      .cselectMenu.isOpen {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0px) scale(1);
+      }
+
+      .cselectOption {
+        width: 100%;
+        border: none;
+        background: transparent;
+        color: var(--menuText);
+        padding: 10px 12px;
+        cursor: pointer;
+        text-align: left;
+        display: block;
+        font: inherit;
+        transition: background 0.18s ease;
+      }
+
+      .cselectOption:hover {
+        background: var(--menuHover);
+      }
+
+      .cselectOption[aria-selected="true"] {
+        background: var(--menuSelected);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .cselectBtn .cselectChevron,
+        .cselectMenu,
+        .cselectOption {
+          transition: none !important;
+        }
+      }
+
+      input:focus,
+      select:focus,
+      button:focus-visible {
+        box-shadow: 0 0 0 4px var(--ring);
+        border-color: rgba(124, 92, 255, 0.55);
+      }
+
+      input::placeholder {
+        color: var(--faint);
+      }
+
+      input {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 4px;
+      }
+
+      button {
+        appearance: none;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        padding: 11px 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: transform 0.06s ease, background 0.18s ease, border-color 0.18s ease;
+      }
+
+      .themeBtn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+
+      .themeBtn strong {
+        color: var(--text);
+        font-weight: 650;
+      }
+
+      button:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      .primary {
+        border-color: rgba(124, 92, 255, 0.55);
+        background: linear-gradient(135deg, rgba(124, 92, 255, 0.95), rgba(55, 208, 255, 0.78));
+        color: white;
+      }
+
+      .primary:hover {
+        background: linear-gradient(135deg, rgba(124, 92, 255, 1), rgba(55, 208, 255, 0.88));
+      }
+
+      .ghost {
+        background: transparent;
+      }
+
+      .result {
+        display: grid;
+        gap: 10px;
+        padding: 14px 14px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: var(--field);
+      }
+
+      .big {
+        font-size: 26px;
+        font-weight: 750;
+        letter-spacing: 0.2px;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .small {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 14px;
+        align-items: center;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--muted);
+        font-size: 12.5px;
+      }
+
+      .pill code {
+        font-family: var(--mono);
+        color: var(--text);
+        font-size: 12px;
+      }
+
+      .hint {
+        color: var(--muted);
+        font-size: 12.5px;
+        line-height: 1.45;
+      }
+
+      .list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .fav {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .fav button {
+        padding: 8px 10px;
+        border-radius: 10px;
+      }
+
+      .fav .pair {
+        display: grid;
+        gap: 2px;
+      }
+
+      .fav .pair strong {
+        font-size: 13.5px;
+      }
+
+      .fav .pair span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .footer {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .footer a {
+        color: inherit;
+      }
+
+      .chart {
+        margin-top: 14px;
+      }
+
+      .chartHead {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+
+      .chartBox {
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.05);
+        overflow: hidden;
+      }
+
+      .chartBox svg {
+        display: block;
+        width: 100%;
+        height: 180px;
+      }
+
+      .chartMeta {
+        display: grid;
+        gap: 8px;
+        padding: 10px 12px;
+      }
+
+      .chartHint {
+        color: var(--muted);
+        font-size: 12.5px;
+        line-height: 1.45;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="title">
+          <h1>Конвертер валют</h1>
+          <div class="subtitle">
+            Конвертация в реальном времени через публичный API. Работает и с кешем: если сеть недоступна, покажет
+            последний сохранённый результат.
+          </div>
+        </div>
+        <div class="headerActions">
+          <button class="themeBtn" id="themeBtn" type="button" title="Сменить тему">
+            Тема: <strong id="themeLabel">Система</strong>
+          </button>
+          <div class="badge" id="statusBadge" aria-live="polite">
+            <span class="dot" id="statusDot" aria-hidden="true"></span>
+            <span id="statusText">Готово</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="grid">
+        <section class="card" aria-label="Конвертация">
+          <div class="inner">
+            <h2>Конвертация</h2>
+            <div class="row">
+              <div class="two">
+                <label>
+                  Сумма
+                  <input
+                    id="amount"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    placeholder="Например, 100"
+                    value="100"
+                  />
+                </label>
+                <label>
+                  Быстрый шаг
+                  <select id="step">
+                    <option value="1">1</option>
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="two">
+                <label>
+                  Из
+                  <select id="from"></select>
+                </label>
+                <label>
+                  В
+                  <select id="to"></select>
+                </label>
+              </div>
+
+              <div class="actions">
+                <button class="primary" id="convertBtn">Конвертировать</button>
+                <button class="ghost" id="swapBtn" title="Поменять местами">Swap</button>
+                <button class="ghost" id="saveFavBtn" title="Сохранить пару">☆ В избранное</button>
+                <button class="ghost" id="minusBtn" title="Уменьшить сумму">−</button>
+                <button class="ghost" id="plusBtn" title="Увеличить сумму">+</button>
+              </div>
+
+              <div class="result" aria-live="polite">
+                <div class="big" id="resultLine">—</div>
+                <div class="meta">
+                  <div class="pill"><span>Курс:</span> <code id="rateLine">—</code></div>
+                  <div class="pill"><span>Дата:</span> <code id="dateLine">—</code></div>
+                </div>
+                <div class="small" id="noteLine">Выберите валюты и нажмите «Конвертировать».</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="card" aria-label="Избранное и справка">
+          <div class="inner">
+            <h2>Избранное</h2>
+            <div class="list" id="favorites"></div>
+
+            <div class="chart" aria-label="График курса">
+              <div class="chartHead">
+                <h2 style="margin: 0">График</h2>
+                <label style="margin: 0">
+                  Период
+                  <select id="period" disabled>
+                    <option value="7">7 дней</option>
+                    <option value="30" selected>1 месяц</option>
+                    <option value="90">3 месяца</option>
+                    <option value="365">1 год</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="chartBox">
+                <svg id="chartSvg" viewBox="0 0 600 180" role="img" aria-label="График курса за период">
+                  <defs>
+                    <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0" stop-color="rgba(124, 92, 255, 1)" />
+                      <stop offset="1" stop-color="rgba(55, 208, 255, 1)" />
+                    </linearGradient>
+                    <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stop-color="rgba(124, 92, 255, 0.22)" />
+                      <stop offset="1" stop-color="rgba(124, 92, 255, 0)" />
+                    </linearGradient>
+                  </defs>
+                  <rect x="0" y="0" width="600" height="180" fill="transparent"></rect>
+                  <path id="chartFill" d="" fill="url(#fillGrad)"></path>
+                  <path id="chartLine" d="" fill="none" stroke="url(#lineGrad)" stroke-width="3" stroke-linecap="round"></path>
+                </svg>
+                <div class="chartMeta">
+                  <div class="pill"><span>Пара:</span> <code id="chartPair">—</code></div>
+                  <div class="pill"><span>Последний:</span> <code id="chartLast">—</code></div>
+                  <div class="pill"><span>Мин/макс:</span> <code id="chartMinMax">—</code></div>
+                  <div class="chartHint" id="chartNote">
+                    Скоро будет: график курса за период (без настроек и ключей для посетителей).
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="footer">
+              Курсы: ExchangeRate-API (open.er-api.com).
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <script>
+      "use strict";
+
+      const API_BASE = "https://open.er-api.com/v6/latest";
+      const LS_KEY = "fx_converter_v1";
+      const DEFAULT_CURRENCIES = [
+        ["RUB", "Российский рубль"],
+        ["USD", "Доллар США"],
+        ["EUR", "Евро"],
+        ["KZT", "Тенге"],
+        ["GEL", "Грузинский лари"],
+        ["GBP", "Фунт стерлингов"],
+      ];
+
+      const elements = {
+        themeBtn: document.getElementById("themeBtn"),
+        themeLabel: document.getElementById("themeLabel"),
+        statusBadge: document.getElementById("statusBadge"),
+        statusDot: document.getElementById("statusDot"),
+        statusText: document.getElementById("statusText"),
+        amount: document.getElementById("amount"),
+        step: document.getElementById("step"),
+        from: document.getElementById("from"),
+        to: document.getElementById("to"),
+        convertBtn: document.getElementById("convertBtn"),
+        swapBtn: document.getElementById("swapBtn"),
+        saveFavBtn: document.getElementById("saveFavBtn"),
+        minusBtn: document.getElementById("minusBtn"),
+        plusBtn: document.getElementById("plusBtn"),
+        resultLine: document.getElementById("resultLine"),
+        rateLine: document.getElementById("rateLine"),
+        dateLine: document.getElementById("dateLine"),
+        noteLine: document.getElementById("noteLine"),
+        favorites: document.getElementById("favorites"),
+        period: document.getElementById("period"),
+        chartSvg: document.getElementById("chartSvg"),
+        chartLine: document.getElementById("chartLine"),
+        chartFill: document.getElementById("chartFill"),
+        chartPair: document.getElementById("chartPair"),
+        chartLast: document.getElementById("chartLast"),
+        chartMinMax: document.getElementById("chartMinMax"),
+        chartNote: document.getElementById("chartNote"),
+      };
+
+      function setStatus(kind, text) {
+        elements.statusText.textContent = text;
+        elements.statusDot.classList.remove("ok", "bad");
+        if (kind === "ok") elements.statusDot.classList.add("ok");
+        if (kind === "bad") elements.statusDot.classList.add("bad");
+      }
+
+      const THEME_CYCLE = ["system", "dark", "light"];
+      const THEME_LABELS = { system: "Система", dark: "Тёмная", light: "Светлая" };
+
+      function applyTheme(theme) {
+        const next = THEME_CYCLE.includes(theme) ? theme : "system";
+        document.documentElement.dataset.theme = next;
+        elements.themeLabel.textContent = THEME_LABELS[next] || "Система";
+        saveState({ theme: next });
+      }
+
+      function cycleTheme() {
+        const cur = document.documentElement.dataset.theme || "system";
+        const idx = THEME_CYCLE.indexOf(cur);
+        const next = THEME_CYCLE[(idx + 1 + THEME_CYCLE.length) % THEME_CYCLE.length];
+        applyTheme(next);
+      }
+
+      const customSelects = new Map();
+      let openCustomSelect = null;
+      let customSelectGlobalWired = false;
+
+      function svgChevron() {
+        const ns = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(ns, "svg");
+        svg.setAttribute("viewBox", "0 0 20 20");
+        svg.setAttribute("aria-hidden", "true");
+        svg.classList.add("cselectChevron");
+        const p = document.createElementNS(ns, "path");
+        p.setAttribute("d", "M5.5 7.5l4.5 5 4.5-5");
+        p.setAttribute("fill", "none");
+        p.setAttribute("stroke", "currentColor");
+        p.setAttribute("stroke-width", "1.8");
+        p.setAttribute("stroke-linecap", "round");
+        p.setAttribute("stroke-linejoin", "round");
+        svg.appendChild(p);
+        return svg;
+      }
+
+      function enhanceSelect(selectEl) {
+        if (!selectEl || customSelects.has(selectEl)) return customSelects.get(selectEl) || null;
+
+        const wrap = document.createElement("div");
+        wrap.className = "cselect";
+        selectEl.parentNode.insertBefore(wrap, selectEl);
+        wrap.appendChild(selectEl);
+
+        selectEl.classList.add("cselectNative");
+        selectEl.tabIndex = -1;
+        selectEl.setAttribute("aria-hidden", "true");
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "cselectBtn";
+        btn.setAttribute("aria-haspopup", "listbox");
+        btn.setAttribute("aria-expanded", "false");
+
+        const valueSpan = document.createElement("span");
+        valueSpan.className = "cselectValue";
+        btn.appendChild(valueSpan);
+        btn.appendChild(svgChevron());
+        wrap.appendChild(btn);
+
+        const menu = document.createElement("div");
+        menu.className = "cselectMenu";
+        menu.setAttribute("aria-hidden", "true");
+        menu.setAttribute("role", "listbox");
+        wrap.appendChild(menu);
+
+        function options() {
+          return Array.from(menu.querySelectorAll(".cselectOption"));
+        }
+
+        function sync() {
+          const selected = selectEl.selectedOptions && selectEl.selectedOptions[0] ? selectEl.selectedOptions[0] : null;
+          valueSpan.textContent = selected ? selected.textContent : "—";
+          for (const el of options()) {
+            const isSel = el.dataset.value === selectEl.value;
+            el.setAttribute("aria-selected", String(isSel));
+          }
+        }
+
+        function refresh() {
+          const nodes = Array.from(selectEl.options).map((opt) => {
+            const o = document.createElement("button");
+            o.type = "button";
+            o.className = "cselectOption";
+            o.setAttribute("role", "option");
+            o.dataset.value = opt.value;
+            o.setAttribute("aria-selected", String(opt.value === selectEl.value));
+            o.textContent = opt.textContent || opt.value;
+            o.addEventListener("click", () => {
+              selectEl.value = opt.value;
+              selectEl.dispatchEvent(new Event("change", { bubbles: true }));
+              close(true);
+            });
+            return o;
+          });
+          menu.replaceChildren(...nodes);
+          sync();
+        }
+
+        function open() {
+          if (openCustomSelect && openCustomSelect !== api) openCustomSelect.close(false);
+          openCustomSelect = api;
+          menu.classList.add("isOpen");
+          menu.setAttribute("aria-hidden", "false");
+          btn.setAttribute("aria-expanded", "true");
+          const opts = options();
+          const idx = Math.max(
+            0,
+            opts.findIndex((x) => x.dataset.value === selectEl.value)
+          );
+          const target = opts[idx] || opts[0];
+          if (target) {
+            target.focus();
+            target.scrollIntoView({ block: "nearest" });
+          }
+        }
+
+        function close(focusButton) {
+          if (!menu.classList.contains("isOpen")) return;
+          menu.classList.remove("isOpen");
+          menu.setAttribute("aria-hidden", "true");
+          btn.setAttribute("aria-expanded", "false");
+          if (openCustomSelect === api) openCustomSelect = null;
+          if (focusButton) btn.focus();
+        }
+
+        function toggle() {
+          if (!menu.classList.contains("isOpen")) open();
+          else close(true);
+        }
+
+        function focusMove(dir) {
+          const opts = options();
+          if (!opts.length) return;
+          const active = document.activeElement;
+          const idx = Math.max(0, opts.indexOf(active));
+          const next = opts[(idx + dir + opts.length) % opts.length];
+          next.focus();
+          next.scrollIntoView({ block: "nearest" });
+        }
+
+        btn.addEventListener("click", toggle);
+        btn.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            open();
+          } else if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggle();
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            close(true);
+          }
+        });
+
+        menu.addEventListener("keydown", (e) => {
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            focusMove(1);
+          } else if (e.key === "ArrowUp") {
+            e.preventDefault();
+            focusMove(-1);
+          } else if (e.key === "Home") {
+            e.preventDefault();
+            const opts = options();
+            if (opts[0]) opts[0].focus();
+          } else if (e.key === "End") {
+            e.preventDefault();
+            const opts = options();
+            if (opts[opts.length - 1]) opts[opts.length - 1].focus();
+          } else if (e.key === "Escape") {
+            e.preventDefault();
+            close(true);
+          } else if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            if (document.activeElement && document.activeElement.classList.contains("cselectOption")) {
+              document.activeElement.click();
+            }
+          }
+        });
+
+        selectEl.addEventListener("change", sync);
+
+        if (!customSelectGlobalWired) {
+          customSelectGlobalWired = true;
+          document.addEventListener(
+            "pointerdown",
+            (e) => {
+              if (!openCustomSelect) return;
+              if (!openCustomSelect.wrap.contains(e.target)) openCustomSelect.close(false);
+            },
+            { capture: true }
+          );
+          window.addEventListener("blur", () => {
+            if (openCustomSelect) openCustomSelect.close(false);
+          });
+          window.addEventListener("resize", () => {
+            if (openCustomSelect) openCustomSelect.close(false);
+          });
+        }
+
+        const api = { wrap, selectEl, btn, menu, refresh, sync, open, close };
+        customSelects.set(selectEl, api);
+        refresh();
+        return api;
+      }
+
+      function refreshCustomSelect(selectEl) {
+        const api = customSelects.get(selectEl);
+        if (api) api.refresh();
+      }
+
+      function syncCustomSelect(selectEl) {
+        const api = customSelects.get(selectEl);
+        if (api) api.sync();
+      }
+
+      function parseAmount(value) {
+        const normalized = String(value).replace(",", ".").replace(/[^\d.]/g, "");
+        if (!normalized) return null;
+        const amount = Number(normalized);
+        if (!Number.isFinite(amount)) return null;
+        if (amount <= 0) return null;
+        return amount;
+      }
+
+      function formatMoney(value, code) {
+        try {
+          return new Intl.NumberFormat(undefined, {
+            style: "currency",
+            currency: code,
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          }).format(value);
+        } catch {
+          return `${value.toFixed(1)} ${code}`;
+        }
+      }
+
+      function formatNumber(value) {
+        return new Intl.NumberFormat(undefined, { maximumFractionDigits: 4 }).format(value);
+      }
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(LS_KEY);
+          if (!raw) return null;
+          return JSON.parse(raw);
+        } catch {
+          return null;
+        }
+      }
+
+      function saveState(patch) {
+        const prev = loadState() || {};
+        const next = { ...prev, ...patch, updatedAt: Date.now() };
+        localStorage.setItem(LS_KEY, JSON.stringify(next));
+        return next;
+      }
+
+      function normalizePair(from, to) {
+        return { from: String(from || "").toUpperCase(), to: String(to || "").toUpperCase() };
+      }
+
+      function getFavorites() {
+        const state = loadState();
+        const list = Array.isArray(state?.favorites) ? state.favorites : [];
+        return list
+          .map((p) => normalizePair(p.from, p.to))
+          .filter((p) => p.from && p.to && p.from !== p.to);
+      }
+
+      function setFavorites(list) {
+        const uniq = [];
+        const seen = new Set();
+        for (const item of list) {
+          const p = normalizePair(item.from, item.to);
+          const key = `${p.from}_${p.to}`;
+          if (!p.from || !p.to || p.from === p.to || seen.has(key)) continue;
+          uniq.push(p);
+          seen.add(key);
+        }
+        saveState({ favorites: uniq });
+        renderFavorites();
+      }
+
+      function optionLabel(code, name) {
+        return name ? `${code} — ${name}` : code;
+      }
+
+      function getCurrencyName(code, currencyMap) {
+        if (currencyMap && currencyMap[code]) return currencyMap[code];
+        const local = DEFAULT_CURRENCIES.find(([c]) => c === code);
+        return local ? local[1] : "";
+      }
+
+      function setCurrencies(currencyMap) {
+        const allowed = new Set(DEFAULT_CURRENCIES.map(([c]) => c));
+        const source = DEFAULT_CURRENCIES.map(([c]) => c);
+
+        const state = loadState();
+        const savedFrom = state?.from || "USD";
+        const savedTo = state?.to || "RUB";
+
+        const fromOptions = source.map((code) => {
+          if (!allowed.has(code)) return null;
+          const name = getCurrencyName(code, currencyMap);
+          const opt = document.createElement("option");
+          opt.value = code;
+          opt.textContent = optionLabel(code, name);
+          return opt;
+        }).filter(Boolean);
+
+        const toOptions = fromOptions.map((o) => o.cloneNode(true));
+        elements.from.replaceChildren(...fromOptions);
+        elements.to.replaceChildren(...toOptions);
+
+        if (source.includes(savedFrom)) elements.from.value = savedFrom;
+        if (source.includes(savedTo)) elements.to.value = savedTo;
+
+        refreshCustomSelect(elements.from);
+        refreshCustomSelect(elements.to);
+        syncCustomSelect(elements.from);
+        syncCustomSelect(elements.to);
+      }
+
+      function renderFavorites() {
+        const favs = getFavorites();
+        if (!favs.length) {
+          const empty = document.createElement("div");
+          empty.className = "hint";
+          empty.textContent = "Пока пусто. Нажми «☆ В избранное», чтобы сохранить пару валют.";
+          elements.favorites.replaceChildren(empty);
+          return;
+        }
+
+        const nodes = favs.map((pair) => {
+          const row = document.createElement("div");
+          row.className = "fav";
+
+          const left = document.createElement("div");
+          left.className = "pair";
+          const title = document.createElement("strong");
+          title.textContent = `${pair.from} → ${pair.to}`;
+          const sub = document.createElement("span");
+          sub.textContent = "Быстрый выбор";
+          left.append(title, sub);
+
+          const right = document.createElement("div");
+          right.style.display = "flex";
+          right.style.gap = "8px";
+
+          const use = document.createElement("button");
+          use.textContent = "Выбрать";
+          use.addEventListener("click", () => {
+            elements.from.value = pair.from;
+            elements.to.value = pair.to;
+            saveState({ from: pair.from, to: pair.to });
+            syncCustomSelect(elements.from);
+            syncCustomSelect(elements.to);
+            scheduleChartUpdate();
+            convert({ reason: "favorite" });
+          });
+
+          const del = document.createElement("button");
+          del.textContent = "Удалить";
+          del.addEventListener("click", () => {
+            setFavorites(getFavorites().filter((p) => !(p.from === pair.from && p.to === pair.to)));
+          });
+
+          right.append(use, del);
+          row.append(left, right);
+          return row;
+        });
+
+        elements.favorites.replaceChildren(...nodes);
+      }
+
+      async function fetchJson(url, { timeoutMs = 9000 } = {}) {
+        const controller = new AbortController();
+        const t = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          const res = await fetch(url, { signal: controller.signal, headers: { Accept: "application/json" } });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return await res.json();
+        } finally {
+          clearTimeout(t);
+        }
+      }
+
+      async function loadCurrencies() {
+        const map = Object.fromEntries(DEFAULT_CURRENCIES);
+        setCurrencies(map);
+      }
+
+      function setResult({ amount, from, to, result, rate, date, mode, error }) {
+        if (error) {
+          elements.resultLine.textContent = "—";
+          elements.rateLine.textContent = "—";
+          elements.dateLine.textContent = "—";
+          elements.noteLine.textContent = error;
+          setStatus("bad", "Ошибка");
+          return;
+        }
+
+        elements.resultLine.textContent = `${formatMoney(amount, from)} = ${formatMoney(result, to)}`;
+        elements.rateLine.textContent = `1 ${from} = ${formatNumber(rate)} ${to}`;
+        elements.dateLine.textContent = date || "—";
+        elements.noteLine.textContent =
+          mode === "cache"
+            ? "Показан последний сохранённый результат (без сети)."
+            : "Данные получены из API (могут обновляться в рабочие дни).";
+      }
+
+      function getCachedRates(base) {
+        const state = loadState();
+        const cache = state?.ratesCache && typeof state.ratesCache === "object" ? state.ratesCache : null;
+        const entry = cache?.[base];
+        if (!entry || !entry.rates || typeof entry.rates !== "object") return null;
+        return entry;
+      }
+
+      function saveCachedRates(base, data) {
+        const state = loadState() || {};
+        const ratesCache = state?.ratesCache && typeof state.ratesCache === "object" ? state.ratesCache : {};
+        const entry = {
+          rates: data?.rates || {},
+          time_last_update_unix: data?.time_last_update_unix || null,
+          time_last_update_utc: data?.time_last_update_utc || null,
+          savedAt: Date.now(),
+        };
+        saveState({ ratesCache: { ...ratesCache, [base]: entry } });
+      }
+
+      function formatUpdateTime(entry) {
+        const utc = entry?.time_last_update_utc;
+        if (typeof utc === "string" && utc.trim()) return utc;
+        const unix = entry?.time_last_update_unix;
+        if (Number.isFinite(unix)) {
+          try {
+            return new Date(unix * 1000).toLocaleString();
+          } catch {
+            return "—";
+          }
+        }
+        return "—";
+      }
+
+      function initChartPlaceholder() {
+        const from = elements.from.value;
+        const to = elements.to.value;
+        elements.chartPair.textContent = from && to && from !== to ? `${from} → ${to}` : "—";
+        elements.chartLast.textContent = "—";
+        elements.chartMinMax.textContent = "—";
+        elements.chartLine.setAttribute("d", "");
+        elements.chartFill.setAttribute("d", "");
+      }
+
+      function scheduleChartUpdate() {
+        initChartPlaceholder();
+      }
+
+      async function convert({ reason = "manual" } = {}) {
+        const amount = parseAmount(elements.amount.value);
+        const from = elements.from.value;
+        const to = elements.to.value;
+
+        saveState({ from, to, amountRaw: elements.amount.value });
+
+        if (!amount) {
+          setResult({ error: "Введите сумму больше 0 (можно с точкой или запятой)." });
+          return;
+        }
+        if (!from || !to || from === to) {
+          setResult({ error: "Выберите две разные валюты." });
+          return;
+        }
+
+        elements.convertBtn.disabled = true;
+        setStatus("idle", "Считаю…");
+
+        try {
+          const url = `${API_BASE}/${encodeURIComponent(from)}`;
+          const data = await fetchJson(url, { timeoutMs: 10000 });
+          if (data?.result && data.result !== "success") throw new Error(`API: ${data.result}`);
+
+          const rate = data?.rates?.[to];
+          if (!Number.isFinite(rate)) throw new Error("Bad rate");
+
+          const result = amount * rate;
+          saveCachedRates(from, data);
+
+          setStatus("ok", "Онлайн");
+          setResult({ amount, from, to, result, rate, date: formatUpdateTime(data), mode: "api" });
+        } catch (err) {
+          const cached = getCachedRates(from);
+          const rate = cached?.rates?.[to];
+          if (cached && Number.isFinite(rate)) {
+            setStatus("bad", "Офлайн (кеш)");
+            setResult({
+              amount,
+              from,
+              to,
+              rate,
+              result: amount * rate,
+              date: formatUpdateTime(cached),
+              mode: "cache",
+            });
+          } else {
+            const msg = reason === "init" ? "Не удалось загрузить курсы. Проверьте интернет/VPN/прокси и попробуйте снова." : null;
+            setResult({ error: msg || "Не удалось загрузить курс (нет сети или API недоступен)." });
+          }
+        } finally {
+          elements.convertBtn.disabled = false;
+        }
+      }
+
+      function swap() {
+        const a = elements.from.value;
+        elements.from.value = elements.to.value;
+        elements.to.value = a;
+        saveState({ from: elements.from.value, to: elements.to.value });
+        syncCustomSelect(elements.from);
+        syncCustomSelect(elements.to);
+        scheduleChartUpdate();
+        convert({ reason: "swap" });
+      }
+
+      function adjustAmount(dir) {
+        const step = Number(elements.step.value) || 1;
+        const current = parseAmount(elements.amount.value) ?? 0;
+        const next = Math.max(0, current + dir * step);
+        elements.amount.value = next ? String(next) : "";
+        convert({ reason: "step" });
+      }
+
+      function saveFavorite() {
+        const from = elements.from.value;
+        const to = elements.to.value;
+        if (!from || !to || from === to) {
+          setStatus("bad", "Нельзя сохранить");
+          elements.noteLine.textContent = "Для избранного выберите две разные валюты.";
+          return;
+        }
+        const list = getFavorites();
+        list.unshift({ from, to });
+        setFavorites(list);
+        setStatus("ok", "Сохранено");
+        elements.noteLine.textContent = "Пара добавлена в избранное.";
+      }
+
+      function restoreInputs() {
+        const state = loadState();
+        if (!state) return;
+        if (typeof state.amountRaw === "string") elements.amount.value = state.amountRaw;
+        if (typeof state.period === "string") elements.period.value = state.period;
+        applyTheme(state?.theme || "system");
+        syncCustomSelect(elements.period);
+        initChartPlaceholder();
+      }
+
+      function wire() {
+        document.documentElement.dataset.theme = document.documentElement.dataset.theme || "system";
+        elements.themeBtn.addEventListener("click", cycleTheme);
+
+        enhanceSelect(elements.from);
+        enhanceSelect(elements.to);
+        enhanceSelect(elements.step);
+        enhanceSelect(elements.period);
+
+        elements.convertBtn.addEventListener("click", () => convert({ reason: "manual" }));
+        elements.swapBtn.addEventListener("click", swap);
+        elements.saveFavBtn.addEventListener("click", saveFavorite);
+        elements.minusBtn.addEventListener("click", () => adjustAmount(-1));
+        elements.plusBtn.addEventListener("click", () => adjustAmount(1));
+        // график: скоро будет
+        elements.period.addEventListener("change", () => scheduleChartUpdate());
+
+        elements.amount.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") convert({ reason: "enter" });
+        });
+
+        for (const el of [elements.from, elements.to]) {
+          el.addEventListener("change", () => {
+            saveState({ from: elements.from.value, to: elements.to.value });
+            scheduleChartUpdate();
+            convert({ reason: "change" });
+          });
+        }
+      }
+
+      async function init() {
+        wire();
+        renderFavorites();
+        restoreInputs();
+        await loadCurrencies();
+        await convert({ reason: "init" });
+        scheduleChartUpdate();
+      }
+
+      init();
+    </script>
+  </body>
+</html>
