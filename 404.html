@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Страница не найдена — Конвертер валют</title>
+    <meta name="robots" content="noindex" />
+    <style>
+      :root {
+        --bg: #0b1020;
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.78);
+        --border: rgba(255, 255, 255, 0.16);
+        --card: rgba(255, 255, 255, 0.1);
+        --card2: rgba(255, 255, 255, 0.075);
+        --radius: 18px;
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f6f7fb;
+          --text: rgba(0, 0, 0, 0.9);
+          --muted: rgba(0, 0, 0, 0.68);
+          --border: rgba(0, 0, 0, 0.1);
+          --card: rgba(0, 0, 0, 0.04);
+          --card2: rgba(0, 0, 0, 0.03);
+          --shadow: 0 24px 80px rgba(10, 20, 40, 0.18);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
+        color: var(--text);
+        background: var(--bg);
+      }
+
+      .wrap {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 28px 18px 44px;
+      }
+
+      .card {
+        border-radius: var(--radius);
+        background: linear-gradient(180deg, var(--card), var(--card2));
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        padding: 18px;
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: 22px;
+      }
+
+      p {
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      a {
+        color: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1>404 — страница не найдена</h1>
+        <p>Похоже, ссылка неверная или страница была перемещена.</p>
+        <p><a href="./">Перейти на главную</a></p>
+      </div>
+    </div>
+  </body>
+</html>

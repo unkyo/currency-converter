@@ -474,6 +474,25 @@
         font-weight: 650;
       }
 
+      .shareBtn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+
+      .shareBtn strong {
+        color: var(--text);
+        font-weight: 650;
+      }
+
       button:hover {
         background: rgba(255, 255, 255, 0.12);
       }
@@ -695,6 +714,9 @@
           </div>
         </div>
         <div class="headerActions">
+          <button class="shareBtn" id="shareBtn" type="button" title="Поделиться ссылкой">
+            Поделиться: <strong>Ссылка</strong>
+          </button>
           <button class="themeBtn" id="themeBtn" type="button" title="Сменить тему">
             Тема: <strong id="themeLabel">Система</strong>
           </button>
@@ -709,6 +731,9 @@
         <section class="card" aria-label="Конвертация">
           <div class="inner">
             <h2>Конвертация</h2>
+            <div class="hint" style="margin: 8px 0 12px">
+              Онлайн-конвертер валют для RUB, USD, EUR, KZT, GEL и GBP. Добавляйте пары в избранное и переключайте тему.
+            </div>
             <div class="row">
               <div class="two">
                 <label>
@@ -845,6 +870,7 @@
       ];
 
       const elements = {
+        shareBtn: document.getElementById("shareBtn"),
         themeBtn: document.getElementById("themeBtn"),
         themeLabel: document.getElementById("themeLabel"),
         statusBadge: document.getElementById("statusBadge"),
@@ -1447,6 +1473,7 @@
       function wire() {
         document.documentElement.dataset.theme = document.documentElement.dataset.theme || "system";
         elements.themeBtn.addEventListener("click", cycleTheme);
+        elements.shareBtn.addEventListener("click", shareLink);
 
         enhanceSelect(elements.from);
         enhanceSelect(elements.to);
@@ -1482,6 +1509,27 @@
         await convert({ reason: "init" });
         scheduleChartUpdate();
         initBuildInfo();
+      }
+
+      async function shareLink() {
+        const url = location.href;
+        const title = document.title || "Конвертер валют";
+        try {
+          if (navigator.share) {
+            await navigator.share({ title, url });
+            return;
+          }
+        } catch {
+          // ignore and fall back
+        }
+
+        try {
+          await navigator.clipboard.writeText(url);
+          setStatus("ok", "Ссылка скопирована");
+          setTimeout(() => setStatus("ok", "Онлайн"), 1400);
+        } catch {
+          prompt("Скопируйте ссылку:", url);
+        }
       }
 
       function initBuildInfo() {
