@@ -1470,6 +1470,39 @@
         initChartPlaceholder();
       }
 
+      function applyUrlParams() {
+        try {
+          const params = new URLSearchParams(location.search);
+          const from = (params.get("from") || "").trim().toUpperCase();
+          const to = (params.get("to") || "").trim().toUpperCase();
+          const amount = (params.get("amount") || "").trim();
+
+          const allowed = new Set(DEFAULT_CURRENCIES.map(([c]) => c));
+          let changed = false;
+
+          if (from && allowed.has(from)) {
+            elements.from.value = from;
+            changed = true;
+          }
+          if (to && allowed.has(to)) {
+            elements.to.value = to;
+            changed = true;
+          }
+          if (amount) {
+            elements.amount.value = amount;
+            changed = true;
+          }
+
+          if (changed) {
+            saveState({ from: elements.from.value, to: elements.to.value, amountRaw: elements.amount.value });
+            syncCustomSelect(elements.from);
+            syncCustomSelect(elements.to);
+          }
+        } catch {
+          // ignore
+        }
+      }
+
       function wire() {
         document.documentElement.dataset.theme = document.documentElement.dataset.theme || "system";
         elements.themeBtn.addEventListener("click", cycleTheme);
@@ -1506,6 +1539,7 @@
         renderFavorites();
         restoreInputs();
         await loadCurrencies();
+        applyUrlParams();
         await convert({ reason: "init" });
         scheduleChartUpdate();
         initBuildInfo();

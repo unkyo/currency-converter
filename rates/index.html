@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Курсы валют — Конвертер валют</title>
+    <meta name="description" content="Страницы курсов валют: USD/RUB, EUR/RUB, GBP/RUB, GEL/RUB, KZT/RUB." />
+    <link rel="canonical" href="https://unkyo.github.io/currency-converter/rates/" />
+    <style>
+      :root {
+        --bg: #0b1020;
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.78);
+        --border: rgba(255, 255, 255, 0.16);
+        --card: rgba(255, 255, 255, 0.1);
+        --card2: rgba(255, 255, 255, 0.075);
+        --radius: 18px;
+        --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f6f7fb;
+          --text: rgba(0, 0, 0, 0.9);
+          --muted: rgba(0, 0, 0, 0.68);
+          --border: rgba(0, 0, 0, 0.1);
+          --card: rgba(0, 0, 0, 0.04);
+          --card2: rgba(0, 0, 0, 0.03);
+          --shadow: 0 24px 80px rgba(10, 20, 40, 0.18);
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
+        color: var(--text);
+        background: var(--bg);
+      }
+
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 28px 18px 44px;
+      }
+
+      .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+
+      .card {
+        border-radius: var(--radius);
+        background: linear-gradient(180deg, var(--card), var(--card2));
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        padding: 18px;
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: 22px;
+      }
+
+      p,
+      li {
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      @media (max-width: 640px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .tile {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px;
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .tile strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .tile span {
+        color: var(--muted);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top">
+        <h1>Курсы валют</h1>
+        <a href="../">← Конвертер</a>
+      </div>
+      <div class="card">
+        <p>Подборка страниц курсов для популярных пар. На каждой странице есть актуальный курс и ссылка на конвертер.</p>
+        <div class="grid">
+          <a class="tile" href="usd-rub.html"><strong>USD → RUB</strong><span>Курс доллара к рублю</span></a>
+          <a class="tile" href="eur-rub.html"><strong>EUR → RUB</strong><span>Курс евро к рублю</span></a>
+          <a class="tile" href="gbp-rub.html"><strong>GBP → RUB</strong><span>Курс фунта к рублю</span></a>
+          <a class="tile" href="gel-rub.html"><strong>GEL → RUB</strong><span>Курс лари к рублю</span></a>
+          <a class="tile" href="kzt-rub.html"><strong>KZT → RUB</strong><span>Курс тенге к рублю</span></a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
