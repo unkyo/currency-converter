@@ -1,0 +1,6 @@
+{
+  "base": "USD",
+  "currencies": ["USD", "EUR", "RUB", "KZT", "GEL", "GBP"],
+  "updatedAt": "",
+  "points": []
+}

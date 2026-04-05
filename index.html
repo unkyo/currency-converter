@@ -799,7 +799,7 @@
                 <h2 style="margin: 0">График</h2>
                 <label style="margin: 0">
                   Период
-                  <select id="period" disabled>
+                  <select id="period">
                     <option value="7">7 дней</option>
                     <option value="30" selected>1 месяц</option>
                     <option value="90">3 месяца</option>
@@ -829,7 +829,7 @@
                   <div class="pill"><span>Последний:</span> <code id="chartLast">—</code></div>
                   <div class="pill"><span>Мин/макс:</span> <code id="chartMinMax">—</code></div>
                   <div class="chartHint" id="chartNote">
-                    Скоро будет: график курса за период (без настроек и ключей для посетителей).
+                    Загрузка графика…
                   </div>
                 </div>
               </div>
@@ -1357,18 +1357,177 @@
         return "—";
       }
 
-      function initChartPlaceholder() {
-        const from = elements.from.value;
-        const to = elements.to.value;
-        elements.chartPair.textContent = from && to && from !== to ? `${from} → ${to}` : "—";
+      const HISTORY_URL = "data/history-usd.json";
+      const HISTORY_BASE = "USD";
+      let historyDataPromise = null;
+      let chartTimer = null;
+      let chartToken = 0;
+
+      function setChartEmpty(message) {
+        elements.chartPair.textContent = "—";
         elements.chartLast.textContent = "—";
         elements.chartMinMax.textContent = "—";
         elements.chartLine.setAttribute("d", "");
         elements.chartFill.setAttribute("d", "");
+        elements.chartNote.textContent = message || "Нет данных.";
+      }
+
+      async function loadHistoryData() {
+        if (!historyDataPromise) {
+          historyDataPromise = (async () => {
+            const res = await fetch(HISTORY_URL, { headers: { Accept: "application/json" } });
+            if (!res.ok) throw new Error(`history HTTP ${res.status}`);
+            return await res.json();
+          })();
+        }
+        return await historyDataPromise;
+      }
+
+      function toMs(dateStr) {
+        const ms = Date.parse(`${dateStr}T00:00:00Z`);
+        return Number.isFinite(ms) ? ms : NaN;
+      }
+
+      function computeSeries(history, from, to) {
+        const points = Array.isArray(history?.points) ? history.points : [];
+        if (!points.length) return [];
+
+        const series = [];
+        for (const p of points) {
+          const date = p?.date;
+          const rates = p?.rates;
+          if (!date || !rates || typeof rates !== "object") continue;
+          const fromPerBase = Number(rates[from]);
+          const toPerBase = Number(rates[to]);
+          if (!Number.isFinite(fromPerBase) || !Number.isFinite(toPerBase) || fromPerBase <= 0) continue;
+          const rate = toPerBase / fromPerBase;
+          series.push({ date, rate });
+        }
+        return series.sort((a, b) => toMs(a.date) - toMs(b.date));
+      }
+
+      function clampSeriesToDays(series, days) {
+        if (series.length <= 1) return series;
+        const msEnd = toMs(series[series.length - 1].date);
+        const msStart = msEnd - (Math.max(1, days) - 1) * 24 * 60 * 60 * 1000;
+        return series.filter((p) => {
+          const ms = toMs(p.date);
+          return Number.isFinite(ms) && ms >= msStart && ms <= msEnd;
+        });
+      }
+
+      function formatHistoryUpdated(history) {
+        const updatedAt = history?.updatedAt;
+        if (typeof updatedAt === "string" && updatedAt.trim()) return updatedAt;
+        return "—";
+      }
+
+      function renderChart(series, { from, to, days, updatedAt }) {
+        elements.chartPair.textContent = `${from} → ${to} (${days}д)`;
+
+        if (!series || series.length === 0) {
+          elements.chartLast.textContent = "—";
+          elements.chartMinMax.textContent = "—";
+          elements.chartLine.setAttribute("d", "");
+          elements.chartFill.setAttribute("d", "");
+          elements.chartNote.textContent = "История курсов обновляется раз в сутки. Данных пока нет.";
+          return;
+        }
+
+        if (series.length === 1) {
+          const only = series[0];
+          const endMs = toMs(only.date);
+          const startMs = Number.isFinite(endMs) ? endMs - (Math.max(1, days) - 1) * 24 * 60 * 60 * 1000 : Date.now();
+          const startDate = new Date(startMs).toISOString().slice(0, 10);
+          series = [{ date: startDate, rate: only.rate }, only];
+          elements.chartNote.textContent = "История курсов собирается ежедневно. Пока доступна только 1 точка (график плоский).";
+        }
+
+        const W = 600;
+        const H = 180;
+        const padX = 18;
+        const padTop = 16;
+        const padBottom = 18;
+
+        const values = series.map((p) => p.rate);
+        let min = Math.min(...values);
+        let max = Math.max(...values);
+        if (!Number.isFinite(min) || !Number.isFinite(max)) {
+          setChartEmpty("Не удалось построить график.");
+          return;
+        }
+        if (min === max) {
+          min = min * 0.999;
+          max = max * 1.001;
+        }
+
+        const n = series.length;
+        const xStep = (W - padX * 2) / Math.max(1, n - 1);
+        const ySpan = H - padTop - padBottom;
+
+        const coords = series.map((p, i) => {
+          const x = padX + i * xStep;
+          const t = (p.rate - min) / (max - min);
+          const y = padTop + (1 - t) * ySpan;
+          return { x, y };
+        });
+
+        const d = coords
+          .map((c, i) => {
+            const cmd = i === 0 ? "M" : "L";
+            return `${cmd}${c.x.toFixed(2)} ${c.y.toFixed(2)}`;
+          })
+          .join(" ");
+
+        const last = series[series.length - 1];
+        elements.chartLast.textContent = `1 ${from} = ${formatNumber(last.rate)} ${to} (${last.date})`;
+        elements.chartMinMax.textContent = `${formatNumber(min)} / ${formatNumber(max)}`;
+        elements.chartLine.setAttribute("d", d);
+
+        const fill = `${d} L${coords[coords.length - 1].x.toFixed(2)} ${(H - padBottom).toFixed(2)} L${coords[0].x.toFixed(
+          2
+        )} ${(H - padBottom).toFixed(2)} Z`;
+        elements.chartFill.setAttribute("d", fill);
+
+        if (series.length > 2) {
+          elements.chartNote.textContent = `Обновляется раз в сутки • ${formatHistoryUpdated({ updatedAt })}`;
+        }
       }
 
       function scheduleChartUpdate() {
-        initChartPlaceholder();
+        if (chartTimer) clearTimeout(chartTimer);
+        chartTimer = setTimeout(() => updateChart(), 180);
+      }
+
+      async function updateChart() {
+        const from = elements.from.value;
+        const to = elements.to.value;
+        const days = Number(elements.period.value) || 30;
+        saveState({ period: String(days) });
+
+        if (!from || !to || from === to) {
+          setChartEmpty("Выберите две разные валюты.");
+          return;
+        }
+
+        elements.chartPair.textContent = `${from} → ${to} (${days}д)`;
+        elements.chartNote.textContent = "Загрузка графика…";
+
+        const token = ++chartToken;
+        try {
+          const history = await loadHistoryData();
+          if (token !== chartToken) return;
+          if (history?.base && history.base !== HISTORY_BASE) {
+            setChartEmpty("История курсов недоступна (неверная база).");
+            return;
+          }
+          const seriesAll = computeSeries(history, from, to);
+          const series = clampSeriesToDays(seriesAll, days);
+          renderChart(series, { from, to, days, updatedAt: history?.updatedAt || "" });
+        } catch {
+          if (token !== chartToken) return;
+          setChartEmpty("График временно недоступен. Попробуйте обновить позже.");
+        }
       }
 
       async function convert({ reason = "manual" } = {}) {
@@ -1467,7 +1626,7 @@
         if (typeof state.period === "string") elements.period.value = state.period;
         applyTheme(state?.theme || "system");
         syncCustomSelect(elements.period);
-        initChartPlaceholder();
+        scheduleChartUpdate();
       }
 
       function applyUrlParams() {
