@@ -7,6 +7,7 @@ const PRECACHE_URLS = [
   "./index.html",
   "./privacy.html",
   "./partners.html",
+  "./support.html",
   "./rates/",
   "./rates/index.html",
   "./rates/usd-rub.html",
@@ -106,4 +107,3 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(staleWhileRevalidate(request));
   }
 });
-

@@ -1,0 +1,12 @@
+name = "currency-converter-telegram-bot"
+main = "src/worker.js"
+compatibility_date = "2026-04-05"
+
+# Bind your KV namespace here
+kv_namespaces = [
+  { binding = "STATE", id = "REPLACE_WITH_KV_ID" }
+]
+
+[vars]
+# Set via dashboard or `wrangler secret put BOT_TOKEN`
+ADMIN_CHAT_ID = "5202217888"
