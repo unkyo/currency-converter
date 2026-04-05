@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://unkyo.github.io/currency-converter/sitemap.xml
