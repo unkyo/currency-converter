@@ -1,6 +1,25 @@
 {
   "base": "USD",
-  "currencies": ["USD", "EUR", "RUB", "KZT", "GEL", "GBP"],
-  "updatedAt": "",
-  "points": []
+  "currencies": [
+    "USD",
+    "EUR",
+    "RUB",
+    "KZT",
+    "GEL",
+    "GBP"
+  ],
+  "updatedAt": "Fri, 03 Apr 2026 06:47:31 +0000",
+  "points": [
+    {
+      "date": "2026-04-03",
+      "rates": {
+        "USD": 1,
+        "EUR": 0.8675,
+        "RUB": 80.197971,
+        "KZT": 472.588461,
+        "GEL": 2.695614,
+        "GBP": 0.757324
+      }
+    }
+  ]
 }
