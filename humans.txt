@@ -1,0 +1,8 @@
+/* TEAM */
+Developer: unkyo
+Site: https://unkyo.github.io/currency-converter/
+
+/* ABOUT */
+This is a small, client-side currency converter.
+No server-side storage. Favorites and settings are stored locally in the browser (localStorage).
+
