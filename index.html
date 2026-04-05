@@ -724,6 +724,7 @@
 
             <div class="footer">
               Курсы: ExchangeRate-API (open.er-api.com).
+              <span id="buildInfo" style="display: inline-block; margin-left: 10px"></span>
             </div>
           </div>
         </aside>
@@ -1381,6 +1382,27 @@
         await loadCurrencies();
         await convert({ reason: "init" });
         scheduleChartUpdate();
+        initBuildInfo();
+      }
+
+      function initBuildInfo() {
+        const el = document.getElementById("buildInfo");
+        if (!el) return;
+        const now = new Date();
+        const tz = (() => {
+          try {
+            return Intl.DateTimeFormat().resolvedOptions().timeZone;
+          } catch {
+            return "";
+          }
+        })();
+        const build = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(
+          2,
+          "0"
+        )} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+        const ver = "v1";
+        const tzPart = tz ? ` ${tz}` : "";
+        el.textContent = `Build ${ver} • ${build}${tzPart}`;
       }
 
       init();
