@@ -1746,6 +1746,14 @@
       }
 
       init();
+
+      // PWA/offline: service worker
+      (function registerServiceWorker() {
+        if (!("serviceWorker" in navigator)) return;
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js").catch(() => {});
+        });
+      })();
     </script>
   </body>
 </html>
