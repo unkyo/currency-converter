@@ -907,6 +907,18 @@
         if (kind === "bad") elements.statusDot.classList.add("bad");
       }
 
+      let stableStatus = { kind: "ok", text: "Готово" };
+
+      function setStableStatus(kind, text) {
+        stableStatus = { kind, text };
+        setStatus(kind, text);
+      }
+
+      function setTransientStatus(kind, text, ms = 1400) {
+        setStatus(kind, text);
+        window.setTimeout(() => setStatus(stableStatus.kind, stableStatus.text), ms);
+      }
+
       const THEME_CYCLE = ["system", "dark", "light"];
       const THEME_LABELS = { system: "Система", dark: "Тёмная", light: "Светлая" };
 
@@ -1310,7 +1322,7 @@
           elements.rateLine.textContent = "—";
           elements.dateLine.textContent = "—";
           elements.noteLine.textContent = error;
-          setStatus("bad", "Ошибка");
+          setStableStatus("bad", "Ошибка");
           return;
         }
 
@@ -1549,6 +1561,28 @@
         elements.convertBtn.disabled = true;
         setStatus("idle", "Считаю…");
 
+        if (navigator.onLine === false) {
+          const cached = getCachedRates(from);
+          const rate = cached?.rates?.[to];
+          if (cached && Number.isFinite(rate)) {
+            setStableStatus("bad", "Офлайн (кеш)");
+            setResult({
+              amount,
+              from,
+              to,
+              rate,
+              result: amount * rate,
+              date: formatUpdateTime(cached),
+              mode: "cache",
+            });
+          } else {
+            setStableStatus("bad", "Офлайн");
+            setResult({ error: "Нет сети. Офлайн‑кеш ещё не заполнен для этой пары." });
+          }
+          elements.convertBtn.disabled = false;
+          return;
+        }
+
         try {
           const url = `${API_BASE}/${encodeURIComponent(from)}`;
           const data = await fetchJson(url, { timeoutMs: 10000 });
@@ -1560,13 +1594,13 @@
           const result = amount * rate;
           saveCachedRates(from, data);
 
-          setStatus("ok", "Онлайн");
+          setStableStatus("ok", "Онлайн");
           setResult({ amount, from, to, result, rate, date: formatUpdateTime(data), mode: "api" });
         } catch (err) {
           const cached = getCachedRates(from);
           const rate = cached?.rates?.[to];
           if (cached && Number.isFinite(rate)) {
-            setStatus("bad", "Офлайн (кеш)");
+            setStableStatus("bad", "Офлайн (кеш)");
             setResult({
               amount,
               from,
@@ -1608,14 +1642,14 @@
         const from = elements.from.value;
         const to = elements.to.value;
         if (!from || !to || from === to) {
-          setStatus("bad", "Нельзя сохранить");
+          setTransientStatus("bad", "Нельзя сохранить");
           elements.noteLine.textContent = "Для избранного выберите две разные валюты.";
           return;
         }
         const list = getFavorites();
         list.unshift({ from, to });
         setFavorites(list);
-        setStatus("ok", "Сохранено");
+        setTransientStatus("ok", "Сохранено");
         elements.noteLine.textContent = "Пара добавлена в избранное.";
       }
 
@@ -1666,6 +1700,11 @@
         document.documentElement.dataset.theme = document.documentElement.dataset.theme || "system";
         elements.themeBtn.addEventListener("click", cycleTheme);
         elements.shareBtn.addEventListener("click", shareLink);
+
+        window.addEventListener("online", () => {
+          if (stableStatus.text.startsWith("Офлайн")) setStableStatus("ok", "Онлайн");
+        });
+        window.addEventListener("offline", () => setStableStatus("bad", "Офлайн"));
 
         enhanceSelect(elements.from);
         enhanceSelect(elements.to);
@@ -1718,8 +1757,7 @@
 
         try {
           await navigator.clipboard.writeText(url);
-          setStatus("ok", "Ссылка скопирована");
-          setTimeout(() => setStatus("ok", "Онлайн"), 1400);
+          setTransientStatus("ok", "Ссылка скопирована");
         } catch {
           prompt("Скопируйте ссылку:", url);
         }
