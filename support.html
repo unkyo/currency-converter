@@ -110,6 +110,7 @@
         </p>
         <p>
           <a class="btn" href="#" id="tgLink" rel="noopener noreferrer">Открыть бота</a>
+          <a class="btn" href="#" id="tgIdea" rel="noopener noreferrer" style="margin-left: 8px">Предложить идею</a>
         </p>
 
         <h2>Что писать</h2>
@@ -124,9 +125,11 @@
       (function () {
         const BOT_USERNAME = "ConverterSupbot";
         const el = document.getElementById("tgLink");
+        const idea = document.getElementById("tgIdea");
         if (!el) return;
         el.href = `https://t.me/${BOT_USERNAME}`;
         el.textContent = `Открыть @${BOT_USERNAME}`;
+        if (idea) idea.href = `https://t.me/${BOT_USERNAME}?start=idea`;
       })();
 
       (function registerServiceWorker() {

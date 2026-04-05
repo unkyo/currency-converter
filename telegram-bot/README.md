@@ -6,6 +6,7 @@ This folder contains a small Telegram bot for collecting feature ideas and suppo
 - Shows menu: **Предложить идею** / **Нужна помощь**
 - Stores a short per-user state in **Workers KV** (10 minutes)
 - Forwards the user's message to the admin chat
+- Supports deep-links: `/?start=idea` and `/?start=help`, and `/cancel`
 
 ## Deploy (Cloudflare Workers)
 1. Install Wrangler
@@ -16,4 +17,3 @@ This folder contains a small Telegram bot for collecting feature ideas and suppo
 4. Set webhook to your worker URL
 
 The worker code lives in `src/worker.js`.
-

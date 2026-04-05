@@ -42,6 +42,7 @@ function menuKeyboard() {
     inline_keyboard: [
       [{ text: "Предложить идею", callback_data: "idea" }],
       [{ text: "Нужна помощь", callback_data: "help" }],
+      [{ text: "Отмена", callback_data: "cancel" }],
     ],
   };
 }
@@ -89,6 +90,12 @@ async function onCallback(env, cb) {
 
   await tg(env, "answerCallbackQuery", { callback_query_id: cb.id });
 
+  if (data === "cancel") {
+    await clearUserState(env, userId);
+    await tg(env, "sendMessage", { chat_id: chatId, text: "Ок. Выберите действие:", reply_markup: menuKeyboard() });
+    return;
+  }
+
   if (data === "idea") {
     await setUserState(env, userId, "idea");
     await tg(env, "sendMessage", {
@@ -120,7 +127,18 @@ async function onMessage(env, msg) {
   const text = (msg?.text || "").trim();
   if (!chatId || !userId) return;
 
-  if (text === "/start") {
+  if (text.startsWith("/start")) {
+    const payload = text.split(" ").slice(1).join(" ").trim();
+    if (payload === "idea") {
+      await setUserState(env, userId, "idea");
+      await tg(env, "sendMessage", { chat_id: chatId, text: "Напишите вашу идею одним сообщением." });
+      return;
+    }
+    if (payload === "help") {
+      await setUserState(env, userId, "help");
+      await tg(env, "sendMessage", { chat_id: chatId, text: "Опишите проблему одним сообщением." });
+      return;
+    }
     await onStart(env, chatId);
     return;
   }
@@ -134,6 +152,12 @@ async function onMessage(env, msg) {
   if (text === "/help") {
     await setUserState(env, userId, "help");
     await tg(env, "sendMessage", { chat_id: chatId, text: "Опишите проблему одним сообщением." });
+    return;
+  }
+
+  if (text === "/cancel") {
+    await clearUserState(env, userId);
+    await tg(env, "sendMessage", { chat_id: chatId, text: "Ок. Выберите действие:", reply_markup: menuKeyboard() });
     return;
   }
 
@@ -177,4 +201,3 @@ export default {
     return json({ ok: true });
   },
 };
-
